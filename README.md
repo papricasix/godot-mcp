@@ -88,17 +88,31 @@ Godot MCP enables AI agents to launch the Godot editor, run projects, capture de
 
 ### Claude Code
 
-```bash
-claude mcp add godot -- npx @coding-solo/godot-mcp
-```
-
-That's it. Restart Claude Code and your Godot MCP tools are available.
-
-With environment variables:
+Build from source and register the local binary:
 
 ```bash
-claude mcp add godot -e GODOT_PATH=/path/to/godot -e DEBUG=true -- npx @coding-solo/godot-mcp
+# 1. Clone and build
+git clone https://github.com/papricasix/godot-mcp.git
+cd godot-mcp
+npm install
+npm run build
+
+# 2. Register with Claude Code (user scope = available in every project)
+claude mcp add godot -s user \
+  -e GODOT_PATH=/path/to/godot \
+  -- node "$PWD/build/index.js"
+
+# 3. Verify it connected
+claude mcp list
 ```
+
+Restart Claude Code, then run `/mcp` in a session to see the godot tools loaded.
+
+Notes:
+- `GODOT_PATH` is optional; omit it if `godot` is already on your `$PATH`. On macOS, a typical value is `/Applications/Godot.app/Contents/MacOS/Godot`.
+- Add `-e DEBUG=true` to enable verbose server-side logging.
+- After changing the source, run `npm run build` again; the registered command points at `build/index.js`, so the next Claude Code session picks up the new build automatically.
+- To remove later: `claude mcp remove godot -s user`.
 
 <details>
 <summary><strong>Cline</strong></summary>
@@ -205,7 +219,7 @@ For any MCP-compatible client, use this configuration:
 <summary><strong>Building from Source</strong></summary>
 
 ```bash
-git clone https://github.com/Coding-Solo/godot-mcp.git
+git clone https://github.com/papricasix/godot-mcp.git
 cd godot-mcp
 npm install
 npm run build

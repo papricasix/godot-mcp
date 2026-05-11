@@ -514,12 +514,24 @@ func add_node(params):
         if debug_mode:
             print("Setting properties on node")
         var properties = params.properties
+        # Property keys that would attach executable code to the node.
+        # Loading and assigning a Script/Shader resource here would persist into
+        # the .tscn and execute on instantiation -> RCE. Defense-in-depth: the
+        # MCP server already rejects these keys, but enforce here too.
+        var forbidden_property_keys = ["script", "set_script", "shader"]
         for property in properties:
+            if property in forbidden_property_keys:
+                printerr("Refusing to set property '" + property + "' via add_node")
+                quit(1)
             if debug_mode:
                 print("Setting property: " + property + " = " + str(properties[property]))
             var value = properties[property]
             if typeof(value) == TYPE_STRING and value.begins_with("res://"):
                 value = load(value)
+                # Refuse executable resource types regardless of property name.
+                if value is Script or value is Shader:
+                    printerr("Refusing to load Script/Shader resource via add_node properties: " + str(properties[property]))
+                    quit(1)
                 if debug_mode:
                     print("Loaded resource for property: " + property + " -> " + str(value))
             new_node.set(property, value)

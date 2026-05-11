@@ -1586,6 +1586,32 @@ class GodotServer {
       );
     }
 
+    if (args.properties !== undefined) {
+      if (
+        typeof args.properties !== 'object' ||
+        args.properties === null ||
+        Array.isArray(args.properties)
+      ) {
+        return this.createErrorResponse(
+          'Invalid properties',
+          ['properties must be a plain object']
+        );
+      }
+      // Block keys that would attach executable code to the node and persist it
+      // into the scene. Setting `script` (or `set_script`) loads an arbitrary
+      // GDScript resource that runs on instantiation -> RCE. `shader` is blocked
+      // as defense-in-depth on the same code path.
+      const forbiddenKeys = new Set(['script', 'set_script', 'shader']);
+      for (const key of Object.keys(args.properties)) {
+        if (forbiddenKeys.has(key)) {
+          return this.createErrorResponse(
+            `Forbidden property: ${key}`,
+            [`Setting "${key}" via add_node is not allowed (arbitrary script/shader attachment)`]
+          );
+        }
+      }
+    }
+
     try {
       // Check if the project directory exists and contains a project.godot file
       const projectFile = join(args.projectPath, 'project.godot');

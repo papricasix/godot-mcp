@@ -59,6 +59,8 @@ A Model Context Protocol (MCP) server for interacting with the Godot game engine
 
 Godot MCP enables AI agents to launch the Godot editor, run projects, capture debug output, and control project execution. This direct feedback loop helps agents understand what works and what doesn't in real Godot projects, leading to better code generation and debugging assistance.
 
+This is a fork of [Coding-Solo/godot-mcp](https://github.com/Coding-Solo/godot-mcp) with additional security hardening and a live debug command bridge (`send_debug_command` / `list_debug_commands`) for sending commands to a running game at runtime.
+
 ## Features
 
 - **Launch Godot Editor**: Open the Godot editor for a specific project
@@ -114,100 +116,6 @@ Notes:
 - After changing the source, run `npm run build` again; the registered command points at `build/index.js`, so the next Claude Code session picks up the new build automatically.
 - To remove later: `claude mcp remove godot -s user`.
 
-<details>
-<summary><strong>Cline</strong></summary>
-
-Add to your Cline MCP settings file (`~/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`):
-
-```json
-{
-  "mcpServers": {
-    "godot": {
-      "command": "npx",
-      "args": ["@coding-solo/godot-mcp"],
-      "env": {
-        "DEBUG": "true"
-      },
-      "disabled": false,
-      "autoApprove": [
-        "launch_editor",
-        "run_project",
-        "get_debug_output",
-        "stop_project",
-        "get_godot_version",
-        "list_projects",
-        "get_project_info",
-        "create_scene",
-        "add_node",
-        "load_sprite",
-        "export_mesh_library",
-        "save_scene",
-        "get_uid",
-        "update_project_uids"
-      ]
-    }
-  }
-}
-```
-
-</details>
-
-<details>
-<summary><strong>Cursor</strong></summary>
-
-**Using the Cursor UI:**
-
-1. Go to **Cursor Settings** > **Features** > **MCP**
-2. Click on the **+ Add New MCP Server** button
-3. Fill out the form:
-   - Name: `godot`
-   - Type: `command`
-   - Command: `npx @coding-solo/godot-mcp`
-4. Click "Add"
-5. You may need to press the refresh button in the top right corner of the MCP server card to populate the tool list
-
-**Using Project-Specific Configuration:**
-
-Create a file at `.cursor/mcp.json` in your project directory:
-
-```json
-{
-  "mcpServers": {
-    "godot": {
-      "command": "npx",
-      "args": ["@coding-solo/godot-mcp"],
-      "env": {
-        "DEBUG": "true"
-      }
-    }
-  }
-}
-```
-
-</details>
-
-<details>
-<summary><strong>Other MCP Clients</strong></summary>
-
-For any MCP-compatible client, use this configuration:
-
-```json
-{
-  "mcpServers": {
-    "godot": {
-      "command": "npx",
-      "args": ["@coding-solo/godot-mcp"],
-      "env": {
-        "GODOT_PATH": "/path/to/godot",
-        "DEBUG": "true"
-      }
-    }
-  }
-}
-```
-
-</details>
-
 ### Environment Variables
 
 | Variable | Description |
@@ -230,6 +138,92 @@ Then point your MCP client to `build/index.js` instead of using `npx`.
 </details>
 
 
+## Live Debug Commands
+
+`send_debug_command` and `list_debug_commands` connect to a lightweight HTTP server that runs inside the game on `localhost:9876`. You implement this server as a GDScript autoload.
+
+### 1. Create the autoload (`DebugHTTPServer.gd`)
+
+```gdscript
+extends Node
+
+const PORT = 9876
+
+var _server := TCPServer.new()
+var _commands: Dictionary = {}
+
+func _ready() -> void:
+    _server.listen(PORT)
+
+func _process(_delta: float) -> void:
+    if not _server.is_connection_available():
+        return
+    var peer := _server.take_connection()
+    await get_tree().process_frame  # let data arrive
+    var raw := peer.get_string(peer.get_available_bytes())
+
+    var lines := raw.split("\r\n")
+    if lines.is_empty():
+        return
+    var parts := lines[0].split(" ")
+    if parts.size() < 2:
+        return
+    var method: String = parts[0]
+    var path: String = parts[1]
+
+    var blank := raw.find("\r\n\r\n")
+    var body := raw.substr(blank + 4) if blank != -1 else ""
+
+    var response_body: String
+    if method == "GET" and path == "/commands":
+        response_body = JSON.stringify({"commands": _commands.keys()})
+    elif method == "POST" and path == "/":
+        var data: Variant = JSON.parse_string(body)
+        var command: String = data.get("command", "") if data is Dictionary else ""
+        response_body = JSON.stringify({"result": _dispatch(command)})
+    else:
+        _send(peer, 404, '{"error":"not found"}')
+        return
+
+    _send(peer, 200, response_body)
+
+func register(command: String, callable: Callable) -> void:
+    _commands[command] = callable
+
+func _dispatch(command: String) -> String:
+    var parts := command.split(" ", false, 1)
+    var name := parts[0] if parts.size() > 0 else ""
+    var arg  := parts[1] if parts.size() > 1 else ""
+    if _commands.has(name):
+        return str(_commands[name].call(arg))
+    return "unknown command: %s" % name
+
+func _send(peer: StreamPeerTCP, status: int, body: String) -> void:
+    var msg := "HTTP/1.1 %d OK\r\nContent-Type: application/json\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s" \
+               % [status, body.length(), body]
+    peer.put_data(msg.to_utf8_buffer())
+```
+
+### 2. Register it as an autoload
+
+In **Project → Project Settings → Autoload**, add `DebugHTTPServer.gd` with the name `DebugHTTPServer`.
+
+### 3. Register commands from your game scripts
+
+```gdscript
+func _ready() -> void:
+    DebugHTTPServer.register("player.heal", func(arg):
+        player.health += int(arg)
+        return "healed %s hp" % arg
+    )
+    DebugHTTPServer.register("spawn.enemy", func(arg):
+        for i in int(arg): spawn_enemy()
+        return "spawned %s enemies" % arg
+    )
+```
+
+Commands are called as `"name arg"` — everything after the first space is passed as the argument string. The callable's return value becomes the `result` field in the MCP response.
+
 ## Architecture
 
 The Godot MCP server uses a bundled GDScript approach for complex operations:
@@ -246,14 +240,6 @@ The bundled script accepts operation type and parameters as JSON, allowing for f
 - **Invalid Project Path**: Ensure the path points to a directory containing a `project.godot` file
 - **Build Issues**: Make sure all dependencies are installed by running `npm install`
 
-<details>
-<summary><strong>Cursor-Specific Issues</strong></summary>
-
-- Ensure the MCP server shows up and is enabled in Cursor settings (Settings > MCP)
-- MCP tools can only be run using the Agent chat profile (Cursor Pro or Business subscription)
-- Use "Yolo Mode" to automatically run MCP tool requests
-
-</details>
 
 ## License
 

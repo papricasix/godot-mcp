@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url';
 import { join, dirname, basename, normalize } from 'path';
 import { existsSync, readdirSync, mkdirSync } from 'fs';
 import { spawn, execFile } from 'child_process';
+import * as http from 'http';
 import { promisify } from 'util';
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
@@ -923,6 +924,29 @@ class GodotServer {
             required: ['projectPath'],
           },
         },
+        {
+          name: 'send_debug_command',
+          description: 'Send a debug command to a running Godot game via the DebugHTTPServer bridge (localhost:9876). The game must be running with the DebugHTTPServer autoload active. Use list_debug_commands to see available commands.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              command: {
+                type: 'string',
+                description: 'The debug command string (e.g. "player.heal 100", "spawn.enemy 3", "time.scale 2.0", "level.complete")',
+              },
+            },
+            required: ['command'],
+          },
+        },
+        {
+          name: 'list_debug_commands',
+          description: 'List all available debug commands registered in the running Godot game via the DebugHTTPServer bridge (localhost:9876).',
+          inputSchema: {
+            type: 'object',
+            properties: {},
+            required: [],
+          },
+        },
       ],
     }));
 
@@ -958,6 +982,10 @@ class GodotServer {
           return await this.handleGetUid(request.params.arguments);
         case 'update_project_uids':
           return await this.handleUpdateProjectUids(request.params.arguments);
+        case 'send_debug_command':
+          return await this.handleSendDebugCommand(request.params.arguments);
+        case 'list_debug_commands':
+          return await this.handleListDebugCommands();
         default:
           throw new McpError(
             ErrorCode.MethodNotFound,
@@ -2192,6 +2220,111 @@ class GodotServer {
         ]
       );
     }
+  }
+
+  /**
+   * Handle the send_debug_command tool
+   */
+  private async handleSendDebugCommand(args: any): Promise<any> {
+    const command = args?.command;
+    if (!command || typeof command !== 'string') {
+      return this.createErrorResponse(
+        'command is required',
+        ['Provide a valid debug command string', 'Use list_debug_commands to see available commands']
+      );
+    }
+
+    return new Promise((resolve) => {
+      const body = JSON.stringify({ command });
+      const bodyBytes = Buffer.from(body, 'utf8');
+      const options: http.RequestOptions = {
+        hostname: '127.0.0.1',
+        port: 9876,
+        path: '/',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': bodyBytes.length,
+        },
+      };
+
+      const req = http.request(options, (res) => {
+        let data = '';
+        res.on('data', (chunk) => { data += chunk; });
+        res.on('end', () => {
+          try {
+            const parsed = JSON.parse(data);
+            resolve({ content: [{ type: 'text', text: parsed.result ?? data }] });
+          } catch {
+            resolve({ content: [{ type: 'text', text: data }] });
+          }
+        });
+      });
+
+      req.setTimeout(5000, () => {
+        req.destroy();
+        resolve(this.createErrorResponse(
+          'Debug command timed out',
+          ['The game may be paused or unresponsive']
+        ));
+      });
+
+      req.on('error', (err: NodeJS.ErrnoException) => {
+        const hint = err.code === 'ECONNREFUSED'
+          ? 'Start the game first with run_project — DebugHTTPServer binds on launch'
+          : err.message;
+        resolve(this.createErrorResponse(
+          `Could not reach DebugHTTPServer: ${hint}`,
+          ['Ensure the game is running (run_project)', 'DebugHTTPServer listens on localhost:9876']
+        ));
+      });
+
+      req.write(bodyBytes);
+      req.end();
+    });
+  }
+
+  /**
+   * Handle the list_debug_commands tool — fetches live command list from the running game
+   */
+  private async handleListDebugCommands(): Promise<any> {
+    return new Promise((resolve) => {
+      const req = http.request(
+        { hostname: '127.0.0.1', port: 9876, path: '/commands', method: 'GET' },
+        (res) => {
+          let data = '';
+          res.on('data', (chunk) => { data += chunk; });
+          res.on('end', () => {
+            try {
+              const parsed = JSON.parse(data);
+              resolve({ content: [{ type: 'text', text: JSON.stringify(parsed.commands, null, 2) }] });
+            } catch {
+              resolve({ content: [{ type: 'text', text: data }] });
+            }
+          });
+        }
+      );
+
+      req.setTimeout(5000, () => {
+        req.destroy();
+        resolve(this.createErrorResponse(
+          'Request timed out',
+          ['The game may be paused or unresponsive']
+        ));
+      });
+
+      req.on('error', (err: NodeJS.ErrnoException) => {
+        const hint = err.code === 'ECONNREFUSED'
+          ? 'Start the game first with run_project — DebugHTTPServer binds on launch'
+          : err.message;
+        resolve(this.createErrorResponse(
+          `Could not reach DebugHTTPServer: ${hint}`,
+          ['Ensure the game is running (run_project)', 'DebugHTTPServer listens on localhost:9876']
+        ));
+      });
+
+      req.end();
+    });
   }
 
   /**

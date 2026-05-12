@@ -1,7 +1,5 @@
 # Godot MCP
 
-[![Github-sponsors](https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#EA4AAA)](https://github.com/sponsors/Coding-Solo)
-
 [![](https://badge.mcpx.dev?type=server 'MCP Server')](https://modelcontextprotocol.io/introduction)
 [![Made with Godot](https://img.shields.io/badge/Made%20with-Godot-478CBF?style=flat&logo=godot%20engine&logoColor=white)](https://godotengine.org)
 [![](https://img.shields.io/badge/Node.js-339933?style=flat&logo=nodedotjs&logoColor=white 'Node.js')](https://nodejs.org/en/download/)
@@ -14,43 +12,33 @@
 
 
 ```text
-                           (((((((             (((((((
-                        (((((((((((           (((((((((((
-                        (((((((((((((       (((((((((((((
-                        (((((((((((((((((((((((((((((((((
-                        (((((((((((((((((((((((((((((((((
-         (((((      (((((((((((((((((((((((((((((((((((((((((      (((((
-       (((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((
-     ((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((
-    ((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((
-      (((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((
-        (((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((
-         (((((((((((@@@@@@@(((((((((((((((((((((((((((@@@@@@@(((((((((((
-         (((((((((@@@@,,,,,@@@(((((((((((((((((((((@@@,,,,,@@@@(((((((((
-         ((((((((@@@,,,,,,,,,@@(((((((@@@@@(((((((@@,,,,,,,,,@@@((((((((
-         ((((((((@@@,,,,,,,,,@@(((((((@@@@@(((((((@@,,,,,,,,,@@@((((((((
-         (((((((((@@@,,,,,,,@@((((((((@@@@@((((((((@@,,,,,,,@@@(((((((((
-         ((((((((((((@@@@@@(((((((((((@@@@@(((((((((((@@@@@@((((((((((((
-         (((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((
-         (((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((
-         @@@@@@@@@@@@@((((((((((((@@@@@@@@@@@@@((((((((((((@@@@@@@@@@@@@
-         ((((((((( @@@(((((((((((@@(((((((((((@@(((((((((((@@@ (((((((((
-         (((((((((( @@((((((((((@@@(((((((((((@@@((((((((((@@ ((((((((((
-          (((((((((((@@@@@@@@@@@@@@(((((((((((@@@@@@@@@@@@@@(((((((((((
-           (((((((((((((((((((((((((((((((((((((((((((((((((((((((((((
-              (((((((((((((((((((((((((((((((((((((((((((((((((((((
-                 (((((((((((((((((((((((((((((((((((((((((((((((
-                        (((((((((((((((((((((((((((((((((
+                        (((((((             (((((((
+                     (((((((((((((       (((((((((((((
+                     (((((((((((((((((((((((((((((((((
+      (((((      (((((((((((((((((((((((((((((((((((((((((      (((((
+    (((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((
+      ((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((
+        (((((((((((@@@@@@@(((((((((((((((((((((((((((@@@@@@@(((((((((
+        (((((((((@@@@,,,,,@@@(((((((((((((((((((((@@@,,,,,@@@@(((((((
+        ((((((((@@@,,,,,,,,,@@(((((((@@@@@(((((((@@,,,,,,,,,@@@((((((
+        (((((((((@@@,,,,,,,@@((((((((@@@@@((((((((@@,,,,,,,@@@(((((((
+        ((((((((((((@@@@@@(((((((((((@@@@@(((((((((((@@@@@@((((((((((
+        (((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((
+        @@@@@@@@@@@@((((((((((((@@@@@@@@@@@@@((((((((((((@@@@@@@@@@@@
+        (((((((( @@@(((((((((((@@(((((((((((@@(((((((((((@@@ ((((((((
+        ((((((((( @@((((((((((@@@(((((((((((@@@((((((((((@@ (((((((((
+         ((((((((((@@@@@@@@@@@@@@(((((((((((@@@@@@@@@@@@@@((((((((((
+           (((((((((((((((((((((((((((((((((((((((((((((((((((((((
+                     (((((((((((((((((((((((((((((((((
 
-
-                          /$$      /$$  /$$$$$$  /$$$$$$$
-                         | $$$    /$$$ /$$__  $$| $$__  $$
-                         | $$$$  /$$$$| $$  \__/| $$  \ $$
-                         | $$ $$/$$ $$| $$      | $$$$$$$/
-                         | $$  $$$| $$| $$      | $$____/
-                         | $$\  $ | $$| $$    $$| $$
-                         | $$ \/  | $$|  $$$$$$/| $$
-                         |__/     |__/ \______/ |__/
+                       /$$      /$$  /$$$$$$  /$$$$$$$
+                      | $$$    /$$$ /$$__  $$| $$__  $$
+                      | $$$$  /$$$$| $$  \__/| $$  \ $$
+                      | $$ $$/$$ $$| $$      | $$$$$$$/
+                      | $$  $$$| $$| $$      | $$____/
+                      | $$\  $ | $$| $$    $$| $$
+                      | $$ \/  | $$|  $$$$$$/| $$
+                      |__/     |__/ \______/ |__/
 ```
 
 A Model Context Protocol (MCP) server for interacting with the Godot game engine.
@@ -59,7 +47,7 @@ A Model Context Protocol (MCP) server for interacting with the Godot game engine
 
 Godot MCP enables AI agents to launch the Godot editor, run projects, capture debug output, and control project execution. This direct feedback loop helps agents understand what works and what doesn't in real Godot projects, leading to better code generation and debugging assistance.
 
-This is a fork of [Coding-Solo/godot-mcp](https://github.com/Coding-Solo/godot-mcp) with additional security hardening and a live debug command bridge (`send_debug_command` / `list_debug_commands`) for sending commands to a running game at runtime.
+This is a **fork** of [Coding-Solo/godot-mcp](https://github.com/Coding-Solo/godot-mcp) with additional security hardening and a live debug command bridge (`send_debug_command` / `list_debug_commands`) for sending commands to a running game at runtime.
 
 ## Features
 
@@ -67,6 +55,9 @@ This is a fork of [Coding-Solo/godot-mcp](https://github.com/Coding-Solo/godot-m
 - **Run Godot Projects**: Execute Godot projects in debug mode
 - **Capture Debug Output**: Retrieve console output and error messages
 - **Control Execution**: Start and stop Godot projects programmatically
+- **Live Debug Bridge** (requires in-game autoload):
+  - Send debug commands to a running game over HTTP
+  - List all registered debug commands
 - **Get Godot Version**: Retrieve the installed Godot version
 - **List Godot Projects**: Find Godot projects in a specified directory
 - **Project Analysis**: Get detailed information about project structure

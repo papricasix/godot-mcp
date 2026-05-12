@@ -5,9 +5,9 @@
 [![](https://img.shields.io/badge/Node.js-339933?style=flat&logo=nodedotjs&logoColor=white 'Node.js')](https://nodejs.org/en/download/)
 [![](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white 'TypeScript')](https://www.typescriptlang.org/)
 
-[![](https://img.shields.io/github/last-commit/Coding-Solo/godot-mcp 'Last Commit')](https://github.com/Coding-Solo/godot-mcp/commits/main)
-[![](https://img.shields.io/github/stars/Coding-Solo/godot-mcp 'Stars')](https://github.com/Coding-Solo/godot-mcp/stargazers)
-[![](https://img.shields.io/github/forks/Coding-Solo/godot-mcp 'Forks')](https://github.com/Coding-Solo/godot-mcp/network/members)
+[![](https://img.shields.io/github/last-commit/papricasix/godot-mcp 'Last Commit')](https://github.com/papricasix/godot-mcp/commits/main)
+[![](https://img.shields.io/github/stars/papricasix/godot-mcp 'Stars')](https://github.com/papricasix/godot-mcp/stargazers)
+[![](https://img.shields.io/github/forks/papricasix/godot-mcp 'Forks')](https://github.com/papricasix/godot-mcp/network/members)
 [![](https://img.shields.io/badge/License-MIT-red.svg 'MIT License')](https://opensource.org/licenses/MIT)
 
 
